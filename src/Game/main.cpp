@@ -61,7 +61,7 @@ int main() {
         DEBUG_FPS(current_delta_time);
         // Swap the buffers to update the screen
         system("clear");
-        std::cout << std::setprecision(2) << std::fixed << debug.getFPS()
+        std::cout << std::setprecision(4) << std::fixed << debug.getFPS()
                   << std::endl
                   << debug.getUPS() << std::endl;
         window.swapBuffers();
