@@ -36,51 +36,20 @@ struct TimerRAII {
         }
     }
 };
-
-// Windows precise sleep using high resolution timer
+#endif
 void precise_sleep(double milliseconds) {
     if (milliseconds <= 0.0)
         return;
 
-    auto start = std::chrono::high_resolution_clock::now();
-    auto target =
-        start + std::chrono::duration<double, std::milli>(milliseconds);
+    auto target = std::chrono::high_resolution_clock::now() +
+                  std::chrono::duration<double, std::milli>(milliseconds);
 
     // Sleep most of the time, spin for final precision
-    double sleep_time = milliseconds - 0.5; // Leave 0.5ms for spin
-    if (sleep_time > 0.0) {
-        Sleep(static_cast<DWORD>(sleep_time));
-    }
-
-    // Spin for final precision
-    while (std::chrono::high_resolution_clock::now() < target) {
-        std::this_thread::yield();
-    }
-}
-#else
-// Dummy struct for non-Windows platforms
-struct TimerRAII {
-    TimerRAII(int = 1) {
-        std::cout << "High resolution timer not available on this platform"
-                  << std::endl;
-    }
-};
-
-// Fallback sleep for non-Windows platforms
-void precise_sleep(double milliseconds) {
-    if (milliseconds <= 0.0)
-        return;
-
-    auto start = std::chrono::high_resolution_clock::now();
-    auto target =
-        start + std::chrono::duration<double, std::milli>(milliseconds);
-
-    // Use standard sleep for most of the time
-    double sleep_time =
-        milliseconds - 1.0; // Leave 1ms for spin on other platforms
-    if (sleep_time > 0.0) {
+    double sleep_time = milliseconds - 1;
+    if (sleep_time > 1) {
         std::this_thread::sleep_for(
             std::chrono::duration<double, std::milli>(sleep_time));
+        std::cout << sleep_time << " || sleeping\n";
     }
 
     // Spin for final precision
@@ -88,7 +57,28 @@ void precise_sleep(double milliseconds) {
         std::this_thread::yield();
     }
 }
-#endif
+
+// void precise_sleep(double milliseconds) {
+//     if (milliseconds <= 0.0)
+//         return;
+//
+//     auto start = std::chrono::high_resolution_clock::now();
+//     auto target =
+//         start + std::chrono::duration<double, std::milli>(milliseconds);
+//
+//     // Use standard sleep for most of the time
+//     double sleep_time = milliseconds - 1;
+//     if (sleep_time > 1) {
+//         std::this_thread::sleep_for(
+//             std::chrono::duration<double, std::milli>(sleep_time));
+//         std::cout << sleep_time << " || sleeping\n";
+//     }
+//
+//     // Spin for final precision
+//     while (std::chrono::high_resolution_clock::now() < target) {
+//         std::this_thread::yield();
+//     }
+// }
 } // namespace
 
 constexpr double TARGET_FPS = 30.0;
@@ -97,8 +87,10 @@ constexpr double TICK_RATE = 20.0;
 constexpr double TICK_DT = 1.0 / TICK_RATE;
 
 int main() {
-    Engine::Window window(800, 600, "Factory Game");
+#ifdef _WIN32
     TimerRAII timer_guard(1);
+#endif
+    Engine::Window window(800, 600, "Factory Game");
 
     double tick_lag = 0;
     double previous_frame_start = 0;
@@ -114,22 +106,17 @@ int main() {
             tick_lag -= TICK_DT;
         }
 
-        double before_sleep = glfwGetTime();
         // Calculate remaining time to target frame duration
         current_frame_delta = glfwGetTime() - frame_start;
         double sleep_time = TARGET_FRAME_DT - current_frame_delta;
-
-        if (sleep_time > 0.001) { // Only sleep if we have more than 1ms to
+        if (sleep_time > 0.000) { // Only sleep if we have more than 1ms to
             precise_sleep(sleep_time * 1000.0); // Convert to milliseconds
         }
-        double real_sleep_time = before_sleep - glfwGetTime();
 
-        do {
-            current_frame_delta = glfwGetTime() - frame_start;
-        } while (current_frame_delta <= TARGET_FRAME_DT);
+        current_frame_delta = glfwGetTime() - frame_start;
         DEBUG_FPS(current_frame_delta);
         std::cout << std::fixed << std::setprecision(10) << debug.getFPS()
-                  << "  ||  " << real_sleep_time << std::endl;
+                  << std::endl;
         window.swapBuffers();
         previous_frame_start = frame_start;
     }
