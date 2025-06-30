@@ -44,3 +44,7 @@ target_link_libraries(${PROJECT_NAME}
     OpenGL::GL
     glfw
 )
+
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} winmm)
+endif()
