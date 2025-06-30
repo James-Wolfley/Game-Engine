@@ -10,53 +10,37 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(PkgConfig REQUIRED)
-
-pkg_search_module(GLFW3 REQUIRED glfw3)
-
+#require opengl
 find_package(OpenGL REQUIRED)
-find_package(glm REQUIRED)
+
+# Add GLFW subdirectory (builds from source)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(third_party/glfw)
+
+# Include directories
 include_directories(
-    ${CMAKE_SOURCE_DIR}/include           # your public headers
-    ${CMAKE_SOURCE_DIR}/third_party  # for third party librarys 
-    ${GLFW3_INCLUDE_DIRS}                  # from pkg-config (e.g. /usr/include/GLFW)
-    ${GLM_INCLUDE_DIRS} 
+    include
+    third_party/
 )
 
-file(GLOB_RECURSE ENGINE_SOURCES
-  ${CMAKE_SOURCE_DIR}/src/Engine/*.cpp
-)
-add_library(Engine STATIC
+# Source files
+file(GLOB_RECURSE ENGINE_SOURCES "src/engine/*.cpp")
+file(GLOB_RECURSE GAME_SOURCES "src/game/*.cpp")
+
+# GLAD source (needs to be compiled)
+set(GLAD_SOURCES third_party/glad/src/glad.c)
+
+# Create executable
+add_executable(${PROJECT_NAME} 
     ${ENGINE_SOURCES}
-)
-
-target_include_directories(Engine
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/include
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/src
-)
-
-
-add_library(glad STATIC
-    ${CMAKE_SOURCE_DIR}/third_party/glad/src/glad.c
-)
-
-target_link_libraries(Engine
-    PUBLIC
-        ${GLFW3_LIBRARIES}
-        glad
-        OpenGL::GL         )
-
-file(GLOB_RECURSE GAME_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/Game/main.cpp
-)
-
-add_executable(MyGame
     ${GAME_SOURCES}
+    ${GLAD_SOURCES}
 )
-target_link_libraries(MyGame
-    PRIVATE
-        Engine
-        OpenGL::GL
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME}
+    OpenGL::GL
+    glfw
 )
