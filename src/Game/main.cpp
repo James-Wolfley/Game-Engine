@@ -47,9 +47,8 @@ void precise_sleep(double milliseconds) {
 #else
 void precise_sleep(double milliseconds) {
     if (milliseconds > 1) {
-         std::this_thread::sleep_for(
-         std::chrono::duration<double, std::milli>(sleep_time));
-
+        std::this_thread::sleep_for(
+            std::chrono::duration<double, std::milli>(milliseconds));
     }
 }
 
