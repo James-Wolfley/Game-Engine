@@ -37,33 +37,22 @@ struct TimerRAII {
     }
 };
 
-void precise_sleep(double milliseconds) {
-    if (milliseconds > 1) {
-        // std::this_thread::sleep_for(
-        // std::chrono::duration<double, std::milli>(sleep_time));
-        Sleep(static_cast<DWORD>(milliseconds));
-    }
-}
-#else
-void precise_sleep(double milliseconds) {
-    if (milliseconds > 1) {
-        std::this_thread::sleep_for(
-            std::chrono::duration<double, std::milli>(milliseconds));
-    }
-}
-
 #endif
-void precise_wait(double milliseconds) {
+void precise_sleep(double milliseconds) {
     if (milliseconds <= 0.0)
         return;
 
     auto target = std::chrono::high_resolution_clock::now() +
                   std::chrono::duration<double, std::milli>(milliseconds);
 
-    // Sleep most of the time, spin for final precision
-    double sleep_time = milliseconds - 1;
-    precise_sleep(sleep_time);
-
+    if (milliseconds > 2) {
+#ifdef _WIN32
+        Sleep(static_cast<DWORD>(milliseconds - 1));
+#else
+        std::this_thread::sleep_for(
+            std::chrono::duration<double, std::milli>(milliseconds - 1));
+#endif
+    }
     // Spin for final precision
     while (std::chrono::high_resolution_clock::now() < target) {
         std::this_thread::yield();
@@ -100,7 +89,7 @@ int main() {
         current_frame_delta = glfwGetTime() - frame_start;
         double sleep_time = TARGET_FRAME_DT - current_frame_delta;
         if (sleep_time > 0.000) { // Only sleep if we have more than 1ms to
-            precise_wait(sleep_time * 1000.0); // Convert to milliseconds
+            precise_sleep(sleep_time * 1000.0); // Convert to milliseconds
         }
 
         current_frame_delta = glfwGetTime() - frame_start;
