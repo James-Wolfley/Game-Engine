@@ -1,6 +1,6 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 cmake_minimum_required(VERSION 3.15)
-project(My2DEngine
+project(MyGame
     VERSION 0.1.0
     DESCRIPTION "A simple 2D ECS-based engine using GLFW, GLAD, and OpenGL"
     LANGUAGES C CXX
@@ -26,8 +26,8 @@ include_directories(
 )
 
 # Source files
-file(GLOB_RECURSE ENGINE_SOURCES "src/engine/*.cpp")
-file(GLOB_RECURSE GAME_SOURCES "src/game/*.cpp")
+file(GLOB_RECURSE ENGINE_SOURCES "src/Engine/*.cpp")
+file(GLOB_RECURSE GAME_SOURCES "src/Game/*.cpp")
 
 # GLAD source (needs to be compiled)
 set(GLAD_SOURCES third_party/glad/src/glad.c)
