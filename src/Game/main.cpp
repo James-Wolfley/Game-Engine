@@ -14,7 +14,7 @@
 namespace {
 #ifdef _WIN32
 struct TimerRAII {
-    UINT period;
+    UINT period = 1;
     bool active = false;
 
     TimerRAII(UINT target_period = 1) {
@@ -36,8 +36,25 @@ struct TimerRAII {
         }
     }
 };
-#endif
+
 void precise_sleep(double milliseconds) {
+    if (milliseconds > 1) {
+        // std::this_thread::sleep_for(
+        // std::chrono::duration<double, std::milli>(sleep_time));
+        Sleep(static_cast<DWORD>(milliseconds));
+    }
+}
+#else
+void precise_sleep(double milliseconds) {
+    if (milliseconds > 1) {
+         std::this_thread::sleep_for(
+         std::chrono::duration<double, std::milli>(sleep_time));
+
+    }
+}
+
+#endif
+void precise_wait(double milliseconds) {
     if (milliseconds <= 0.0)
         return;
 
@@ -46,39 +63,13 @@ void precise_sleep(double milliseconds) {
 
     // Sleep most of the time, spin for final precision
     double sleep_time = milliseconds - 1;
-    if (sleep_time > 1) {
-        std::this_thread::sleep_for(
-            std::chrono::duration<double, std::milli>(sleep_time));
-        std::cout << sleep_time << " || sleeping\n";
-    }
+    precise_sleep(sleep_time);
 
     // Spin for final precision
     while (std::chrono::high_resolution_clock::now() < target) {
         std::this_thread::yield();
     }
 }
-
-// void precise_sleep(double milliseconds) {
-//     if (milliseconds <= 0.0)
-//         return;
-//
-//     auto start = std::chrono::high_resolution_clock::now();
-//     auto target =
-//         start + std::chrono::duration<double, std::milli>(milliseconds);
-//
-//     // Use standard sleep for most of the time
-//     double sleep_time = milliseconds - 1;
-//     if (sleep_time > 1) {
-//         std::this_thread::sleep_for(
-//             std::chrono::duration<double, std::milli>(sleep_time));
-//         std::cout << sleep_time << " || sleeping\n";
-//     }
-//
-//     // Spin for final precision
-//     while (std::chrono::high_resolution_clock::now() < target) {
-//         std::this_thread::yield();
-//     }
-// }
 } // namespace
 
 constexpr double TARGET_FPS = 30.0;
@@ -110,7 +101,7 @@ int main() {
         current_frame_delta = glfwGetTime() - frame_start;
         double sleep_time = TARGET_FRAME_DT - current_frame_delta;
         if (sleep_time > 0.000) { // Only sleep if we have more than 1ms to
-            precise_sleep(sleep_time * 1000.0); // Convert to milliseconds
+            precise_wait(sleep_time * 1000.0); // Convert to milliseconds
         }
 
         current_frame_delta = glfwGetTime() - frame_start;
