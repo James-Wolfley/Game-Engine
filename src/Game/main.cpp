@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <thread>
 
 #ifdef _WIN32
-#include <thread>
 #include <windows.h>
 #endif
 
@@ -91,14 +91,14 @@ void precise_sleep(double milliseconds) {
 #endif
 } // namespace
 
-constexpr double TARGET_FPS = 240.0;
+constexpr double TARGET_FPS = 30.0;
 constexpr double TARGET_FRAME_DT = 1.0 / TARGET_FPS;
 constexpr double TICK_RATE = 20.0;
 constexpr double TICK_DT = 1.0 / TICK_RATE;
 
 int main() {
     Engine::Window window(800, 600, "Factory Game");
-    TimerRAII timer_guard(1); 
+    TimerRAII timer_guard(1);
 
     double tick_lag = 0;
     double previous_frame_start = 0;
@@ -119,16 +119,17 @@ int main() {
         current_frame_delta = glfwGetTime() - frame_start;
         double sleep_time = TARGET_FRAME_DT - current_frame_delta;
 
-        //if (sleep_time > 0.001) { // Only sleep if we have more than 1ms to wait
-        //    precise_sleep(sleep_time * 1000.0); // Convert to milliseconds
-        //}
+        if (sleep_time > 0.001) { // Only sleep if we have more than 1ms to
+            precise_sleep(sleep_time * 1000.0); // Convert to milliseconds
+        }
         double real_sleep_time = before_sleep - glfwGetTime();
 
         do {
             current_frame_delta = glfwGetTime() - frame_start;
         } while (current_frame_delta <= TARGET_FRAME_DT);
         DEBUG_FPS(current_frame_delta);
-        std::cout << std::fixed << std::setprecision(10) << debug.getFPS() << "  ||  " << real_sleep_time << std::endl;
+        std::cout << std::fixed << std::setprecision(10) << debug.getFPS()
+                  << "  ||  " << real_sleep_time << std::endl;
         window.swapBuffers();
         previous_frame_start = frame_start;
     }
