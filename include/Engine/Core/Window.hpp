@@ -7,19 +7,24 @@
 namespace Engine {
 
 class Window {
-public:
-  Window(int width, int height, const std::string &title);
-  ~Window();
+    static constexpr double TARGET_FPS = 240.0;
+    static constexpr double TARGET_FRAME_DT = 1.0 / TARGET_FPS;
 
-  int getWindowHeight();
-  int getWindowWidth();
-  void pollEvents();
-  void swapBuffers();
-  bool shouldClose() const;
-  void close();
-  GLFWwindow *native() const { return window; }
+  public:
+    Window(int width, int height, const std::string &title);
+    ~Window();
 
-private:
-  GLFWwindow *window = nullptr;
+    int getWindowHeight();
+    int getWindowWidth();
+    void pollEvents();
+    void swapBuffers();
+    bool shouldClose() const;
+    void close();
+    GLFWwindow *native() const {
+        return window;
+    }
+
+  private:
+    GLFWwindow *window = nullptr;
 };
 } // namespace Engine

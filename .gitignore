@@ -1,5 +1,15 @@
-build/
+build*/
 .cache/
 tmp/
 .vs/
 out/
+*.o
+*.d
+*.a
+*.ts
+*.pc
+*.make
+*.cmake
+CMakeFiles
+Makefile
+compile_commands.json

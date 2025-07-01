@@ -6,6 +6,18 @@ project(MyGame
     LANGUAGES C CXX
 )
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  add_compile_definitions(_RELEASE _DEBUG)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+  add_compile_definitions(_RELEASE)
+else()
+  add_compile_definitions(_DEBUG)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

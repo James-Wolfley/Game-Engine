@@ -1,4 +1,6 @@
 #include "Engine/Core/Window.hpp"
+#include "Engine/Core/ClockManager.hpp"
+#include "Engine/Debug/DebugManager.hpp"
 #include <GLFW/glfw3.h>
 #include <stdexcept>
 
@@ -39,9 +41,7 @@ Window::Window(int width, int height, const std::string &title) {
 
     // If the window is resized, update the viewport automatically:
     glfwSetFramebufferSizeCallback(window,
-                                   [](GLFWwindow *window, int newW, int newH) {
-                                       glViewport(0, 0, newW, newH);
-                                   });
+                                   [](GLFWwindow *window, int newW, int newH) { glViewport(0, 0, newW, newH); });
 
     glfwSwapInterval(0);
 }
@@ -71,6 +71,14 @@ void Window::pollEvents() {
 }
 
 void Window::swapBuffers() {
+    double current_frame_delta = glfwGetTime() - CLOCK_MANAGER.RenderClock->getStartTime();
+    double sleep_time = TARGET_FRAME_DT - current_frame_delta;
+    if (sleep_time > 0.000) {                             // Only sleep if we have more than 1ms to
+        CLOCK_MANAGER.precise_sleep(sleep_time * 1000.0); // Convert to milliseconds
+    }
+
+    current_frame_delta = glfwGetTime() - CLOCK_MANAGER.RenderClock->getStartTime();
+    DEBUG_FPS(current_frame_delta);
     if (window) {
         glfwSwapBuffers(window);
     }
