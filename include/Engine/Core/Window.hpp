@@ -1,7 +1,7 @@
 #pragma once
 #define GLFW_INCLUDE_NONE
+#include "glew/include/GL/glew.h"
 #include <GLFW/glfw3.h>
-#include <glad/glad.h> // include before any GL calls
 #include <string>
 
 namespace Engine {

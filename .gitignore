@@ -13,3 +13,13 @@ out/
 CMakeFiles
 Makefile
 compile_commands.json
+
+
+third_party/glew/auto
+third_party/glew/bin
+third_party/glew/lib
+third_party/glew/doc
+third_party/glew/build
+third_party/glew/README.md
+third_party/glew/*.png
+third_party/glew/*.jpg

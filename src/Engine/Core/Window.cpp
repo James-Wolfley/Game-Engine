@@ -27,18 +27,11 @@ Window::Window(int width, int height, const std::string &title) {
 
     glfwMakeContextCurrent(window);
 
-    // **Initialize GLAD here:**
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        throw std::runtime_error("Failed to initialize GLAD");
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        /* Problem: glewInit failed, something is seriously wrong. */
+        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
-
-    // Set the viewport to the window size. We’ll also handle resizes below.
-    // int w, h;
-    // glfwGetFramebufferSize(window, &w, &h);
-    // glViewport(0, 0, w, h);
-
     // If the window is resized, update the viewport automatically:
     glfwSetFramebufferSizeCallback(window,
                                    [](GLFWwindow *window, int newW, int newH) { glViewport(0, 0, newW, newH); });

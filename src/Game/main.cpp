@@ -2,10 +2,8 @@
 #include "Engine/Core/Window.hpp"
 #include "Engine/Debug/DebugManager.hpp"
 #include <iomanip>
-#include <stdlib.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 #include <iostream>
+#include <stdlib.h>
 
 static constexpr double TICK_RATE = 20.0;
 static constexpr double TICK_DT = 1.0 / TICK_RATE;
